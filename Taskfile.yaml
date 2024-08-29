@@ -1,0 +1,90 @@
+# Taskfile.yml
+
+version: '3'
+
+tasks:
+  encrypt-infisical-secrets:
+    cmds:
+      - echo "Encrypting Infisical secrets..."
+      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_id.txt > .secrets/client_id.enc.txt
+      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_secret.txt > .secrets/client_secret.enc.txt
+      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/infisical-agent-dev.yaml > .secrets/infisical-agent-dev.enc.yaml
+      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/secret-template-dev > .secrets/secret-template-dev.enc
+
+  delete-infisical-decrypted-secrets:
+    cmds:
+      - echo "Deleting Infisical secrets..."
+      - rm -f .secrets/client_id.txt
+      - rm -f .secrets/client_secret.txt
+      - rm -f .secrets/infisical-agent-dev.yaml
+      - rm -f .secrets/secret-template-dev
+
+  delete-infisical-encrypted-secrets:
+    cmds:
+      - echo "Deleting Infisical secrets..."
+      - rm -f .secrets/client_id.enc.txt
+      - rm -f .secrets/client_secret.enc.txt
+      - rm -f .secrets/infisical-agent-dev.enc.yaml
+      - rm -f .secrets/secret-template-dev.enc
+
+  decrypt-infisical-secrets:
+    cmds:
+      - echo "Decrypting Infisical secrets..."
+      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/secret-template-dev.enc > .secrets/secret-template-dev
+      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_id.enc.txt > .secrets/client_id.txt
+      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_secret.enc.txt > .secrets/client_secret.txt
+      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/infisical-agent-dev.enc.yaml > .secrets/infisical-agent-dev.yaml
+      - echo "Infisical secrets decrypted."
+
+  fetch-project-secrets-from-infisical:
+    cmds:
+      - echo "fetching project secrets from Infisical..."
+      - nohup infisical agent --silent --config .secrets/infisical-agent-dev.yaml > infisical_agent.log 2>&1 &
+      - echo "Waiting 5 seconds for the secrets to fetched from Infisical"
+      - |
+        while [ ! -f .env ]; do
+          echo ".env file not found, checking again in 5 seconds..."
+          sleep 5
+        done
+      - echo "Secrets saved to .env"
+
+  start-the-project:
+    cmds:
+      - echo "Starting the project"
+      - nodemon main.js
+      - echo "Project started"
+
+  run-prod:
+    cmds:
+      - task delete-infisical-decrypted-secrets
+      - task decrypt-infisical-secrets
+      - task fetch-project-secrets-from-infisical
+      - task delete-infisical-decrypted-secrets
+      - task start-the-project
+
+  run-dev:
+    cmds:
+      - 
+
+  update-infisical-secrets:
+    cmds:
+      - task task decrypt-infisical-secrets
+      - task delete-infisical-encrypted-secrets
+      - task encrypt-infisical-secrets
+
+
+  # build:
+  #   deps: [secrets]
+  #   cmds:
+  #     - echo "Building the project..."
+  #     # Ajoute ici les commandes de build, par exemple:
+  #     # - npm install && npm run build
+  #     - echo "Project built."
+
+  # run:
+  #   deps: [build]
+  #   cmds:
+  #     - echo "Running the project..."
+  #     # Ajoute ici les commandes de run, par exemple:
+  #     # - npm start
+  #     - echo "Project running."
