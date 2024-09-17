@@ -1,0 +1,15 @@
+client_id.txt
+client_secret.txt
+
+.env
+
+agent-infisical-token
+secret-template
+
+node_modules/
+
+RTD_test.key
+
+Dockerfile.old
+
+agent-infisical-token-dev

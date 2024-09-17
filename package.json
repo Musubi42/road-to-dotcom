@@ -1,0 +1,33 @@
+{
+  "name": "road_to_dotcom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Musubi42/road-to-dotcom.git"
+  },
+  "type": "module",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Musubi42/road-to-dotcom/issues"
+  },
+  "homepage": "https://github.com/Musubi42/road-to-dotcom#readme",
+  "dependencies": {
+    "@infisical/sdk": "^2.2.3",
+    "axios": "^1.7.2",
+    "cheerio": "1.0.0-rc.12",
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "openai": "^4.51.0",
+    "playwright": "^1.44.1",
+    "playwright-extra": "^4.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "qs": "^6.12.1"
+  }
+}

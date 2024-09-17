@@ -2,18 +2,37 @@
 
 version: '3'
 
+vars:
+  AGE_KEY:
+    sh: less ./.env.tmp
+
 tasks:
+  prompt-age-key:
+    cmds:
+      - |
+        echo "Enter your age key: "
+        read -s AGE_KEY
+        if [ -z "$AGE_KEY" ]; then
+          echo "Error: You need the age key to decrypt secrets" && exit 1
+        fi
+        echo "$AGE_KEY" > .env.tmp
+
+  delete-age-key:
+    cmds:
+      - rm -f .env.tmp
+
   encrypt-infisical-secrets:
     cmds:
       - echo "Encrypting Infisical secrets..."
-      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_id.txt > .secrets/client_id.enc.txt
-      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_secret.txt > .secrets/client_secret.enc.txt
-      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/infisical-agent-dev.yaml > .secrets/infisical-agent-dev.enc.yaml
-      - sops encrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/secret-template-dev > .secrets/secret-template-dev.enc
+      - sops encrypt --age "{{.AGE_KEY}}" .secrets/client_id.txt > .secrets/client_id.enc.txt
+      - sops encrypt --age "{{.AGE_KEY}}" .secrets/client_secret.txt > .secrets/client_secret.enc.txt
+      - sops encrypt --age "{{.AGE_KEY}}" .secrets/infisical-agent-dev.yaml > .secrets/infisical-agent-dev.enc.yaml
+      - sops encrypt --age "{{.AGE_KEY}}" .secrets/secret-template-dev > .secrets/secret-template-dev.enc
 
   delete-infisical-decrypted-secrets:
     cmds:
       - echo "Deleting Infisical secrets..."
+      # -f to delete if exist or not
       - rm -f .secrets/client_id.txt
       - rm -f .secrets/client_secret.txt
       - rm -f .secrets/infisical-agent-dev.yaml
@@ -30,10 +49,10 @@ tasks:
   decrypt-infisical-secrets:
     cmds:
       - echo "Decrypting Infisical secrets..."
-      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/secret-template-dev.enc > .secrets/secret-template-dev
-      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_id.enc.txt > .secrets/client_id.txt
-      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/client_secret.enc.txt > .secrets/client_secret.txt
-      - sops --decrypt --age age1tfunvja9e9kp3mvpfr589tqn0dp0x8tsh5d67whejkepmm7r54qqkrm7jr .secrets/infisical-agent-dev.enc.yaml > .secrets/infisical-agent-dev.yaml
+      - sops --decrypt --age "{{.AGE_KEY}}" .secrets/secret-template-dev.enc > .secrets/secret-template-dev
+      - sops --decrypt --age "{{.AGE_KEY}}" .secrets/client_id.enc.txt > .secrets/client_id.txt
+      - sops --decrypt --age "{{.AGE_KEY}}" .secrets/client_secret.enc.txt > .secrets/client_secret.txt
+      - sops --decrypt --age "{{.AGE_KEY}}" .secrets/infisical-agent-dev.enc.yaml > .secrets/infisical-agent-dev.yaml
       - echo "Infisical secrets decrypted."
 
   fetch-project-secrets-from-infisical:
@@ -64,7 +83,7 @@ tasks:
 
   run-dev:
     cmds:
-      - 
+    
 
   update-infisical-secrets:
     cmds:
